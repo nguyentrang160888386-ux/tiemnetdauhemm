@@ -1,0 +1,215 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    // Validation Blueprint: SaveRecord (/saves/{userId})
+    function isValidSaveRecord(data) {
+      return data.keys().hasAll(['blob', 'day', 'cash', 'device', 'updated_at', 'ts']) &&
+        data.keys().hasOnly(['blob', 'day', 'cash', 'device', 'updated_at', 'ts']) &&
+        data.blob is string && data.blob.size() >= 1 && data.blob.size() <= 900000 &&
+        data.day is number && data.day >= 0 && data.day <= 100000 &&
+        data.cash is number && data.cash >= -100000000 && data.cash <= 100000000000 &&
+        data.device is string && data.device.size() <= 120 &&
+        data.updated_at is string && data.updated_at.size() >= 1 && data.updated_at.size() <= 64 &&
+        data.ts is timestamp && data.ts == request.time;
+    }
+
+    // Validation Blueprint: PlayerProfile (/players/{userId})
+    function isValidPlayerProfile(data) {
+      return data.keys().hasAll([
+          'nick', 'shop', 'day', 'lvl', 'branch', 'cash', 'rating',
+          'hot', 'served', 'pcs', 'staff', 'slogan', 'fish', 'ts', 'expireAt'
+        ]) &&
+        data.keys().hasOnly([
+          'nick', 'shop', 'day', 'lvl', 'branch', 'cash', 'rating',
+          'hot', 'served', 'pcs', 'staff', 'slogan', 'fish', 'ts', 'expireAt'
+        ]) &&
+        data.nick is string && data.nick.size() <= 24 &&
+        data.shop is string && data.shop.size() <= 30 &&
+        data.day is number && data.day >= 0 && data.day <= 100000 &&
+        data.lvl is number && data.lvl >= 0 && data.lvl <= 10000 &&
+        data.branch is number && data.branch >= 0 && data.branch <= 100 &&
+        data.cash is number && data.cash >= 0 && data.cash <= 100000000000 &&
+        data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+        data.hot is number && data.hot >= 0 && data.hot <= 100000 &&
+        data.served is number && data.served >= 0 && data.served <= 100000000 &&
+        data.pcs is number && data.pcs >= 0 && data.pcs <= 100 &&
+        data.staff is number && data.staff >= 0 && data.staff <= 50 &&
+        data.slogan is string && data.slogan.size() <= 48 &&
+        data.fish is number && data.fish >= 0 && data.fish <= 100000000 &&
+        data.ts is timestamp && data.ts == request.time &&
+        data.expireAt is timestamp;
+    }
+
+    // Validation Blueprint: NickClaim (/nicks/{nickId})
+    function isValidNickClaim(data) {
+      return data.keys().hasAll(['uid', 'nick']) &&
+        data.keys().hasOnly(['uid', 'nick']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 &&
+        data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.uid == request.auth.uid &&
+        data.nick is string && data.nick.size() >= 1 && data.nick.size() <= 24;
+    }
+
+    // Validation Blueprint: TelemetryDoc (/telemetry/{userId})
+    function isValidTelemetryDoc(data) {
+      return data.keys().hasAll([
+          'ver', 'dev', 'nick', 'first', 'last', 'day', 'branch', 'lvl',
+          'cash', 'giftCash', 'sessions', 'secs', 'levels', 'tabs', 'acts',
+          'ret', 'categories', 'eventCounts', 'daily', 'deviceInfo', 'errs', 'acct', 'ts'
+        ]) &&
+        data.keys().hasOnly([
+          'ver', 'dev', 'nick', 'first', 'last', 'day', 'branch', 'lvl',
+          'cash', 'giftCash', 'sessions', 'secs', 'levels', 'tabs', 'acts',
+          'ret', 'categories', 'eventCounts', 'daily', 'deviceInfo', 'errs', 'acct', 'ts',
+          'lastErr', 'lastErrAt', 'lastErrVer'
+        ]) &&
+        data.ver is string && data.ver.size() <= 16 &&
+        data.dev is string && data.dev.size() <= 24 &&
+        data.nick is string && data.nick.size() <= 24 &&
+        data.first is number && data.first >= 0 &&
+        data.last is number && data.last >= 0 &&
+        data.day is number && data.day >= 0 && data.day <= 100000 &&
+        data.branch is number && data.branch >= 0 && data.branch <= 100 &&
+        data.lvl is number && data.lvl >= 0 && data.lvl <= 10000 &&
+        data.cash is number && data.cash >= -100000000 && data.cash <= 100000000000 &&
+        data.giftCash is number && data.giftCash >= 0 && data.giftCash <= 100000000000 &&
+        data.sessions is number && data.sessions >= 0 &&
+        data.secs is number && data.secs >= 0 &&
+        data.levels is map && data.levels.size() <= 200 &&
+        data.tabs is map && data.tabs.size() <= 100 &&
+        data.acts is map && data.acts.size() <= 200 &&
+        data.ret is map && data.ret.size() <= 400 &&
+        data.categories is map && data.categories.size() <= 50 &&
+        data.eventCounts is map && data.eventCounts.size() <= 200 &&
+        data.daily is map && data.daily.size() <= 60 &&
+        data.deviceInfo is map && data.deviceInfo.size() <= 30 &&
+        data.errs is number && data.errs >= 0 &&
+        data.acct is number && (data.acct == 0 || data.acct == 1) &&
+        data.ts is timestamp && data.ts == request.time &&
+        (!('lastErr' in data) || (data.lastErr is string && data.lastErr.size() <= 200)) &&
+        (!('lastErrAt' in data) || (data.lastErrAt is number && data.lastErrAt >= 0)) &&
+        (!('lastErrVer' in data) || (data.lastErrVer is string && data.lastErrVer.size() <= 32));
+    }
+
+    // Validation Blueprint: TelemetryEvent (/telemetry/{userId}/events/{eventId})
+    function isValidTelemetryEvent(data) {
+      return data.keys().hasAll(['ev', 'p', 'ts', 'expireAt']) &&
+        data.keys().hasOnly(['ev', 'p', 'ts', 'expireAt']) &&
+        data.ev is string && data.ev.size() >= 1 && data.ev.size() <= 64 &&
+        data.p is map && data.p.size() <= 40 &&
+        data.ts is timestamp && data.ts == request.time &&
+        data.expireAt is timestamp;
+    }
+
+    // 1. Cloud Saves Collection (/saves/{userId})
+    match /saves/{userId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isVerifiedOwner(userId) && isValidId(userId) && isValidSaveRecord(incoming());
+      allow update: if (
+        isVerifiedOwner(userId) && isValidId(userId) && isValidSaveRecord(incoming()) && (
+          // Action: SyncSave
+          incoming().diff(existing()).affectedKeys().hasOnly(['blob', 'day', 'cash', 'device', 'updated_at', 'ts'])
+        )
+      );
+      allow delete: if false;
+    }
+
+    // 2. Public Leaderboard Profiles (/players/{userId})
+    match /players/{userId} {
+      allow get: if isValidId(userId) && existing().day >= 0 && existing().cash >= 0;
+      allow list: if existing().day >= 0 && existing().cash >= 0;
+      allow create: if isVerifiedOwner(userId) && isValidId(userId) && isValidPlayerProfile(incoming());
+      allow update: if (
+        isVerifiedOwner(userId) && isValidId(userId) && isValidPlayerProfile(incoming()) && (
+          // Action: UpdateLeaderboardStats
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'nick', 'shop', 'day', 'lvl', 'branch', 'cash', 'rating',
+            'hot', 'served', 'pcs', 'staff', 'slogan', 'fish', 'ts', 'expireAt'
+          ])
+        )
+      );
+      allow delete: if false;
+    }
+
+    // 3. Unique Nickname Claims (/nicks/{nickId})
+    match /nicks/{nickId} {
+      allow get: if isSignedIn() && isValidId(nickId);
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(nickId) && isValidNickClaim(incoming());
+      allow update: if (
+        isVerifiedUser() && isValidId(nickId) && isValidNickClaim(incoming()) && (
+          // Action: RefreshOwnNickClaim
+          incoming().uid == existing().uid &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['uid', 'nick'])
+        )
+      );
+      allow delete: if isVerifiedUser() && isValidId(nickId) && existing().uid == request.auth.uid;
+    }
+
+    // 4. Telemetry Summary & Events (/telemetry/{userId})
+    match /telemetry/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidId(userId) && isValidTelemetryDoc(incoming());
+      allow update: if (
+        isOwner(userId) && isValidId(userId) && isValidTelemetryDoc(incoming()) && (
+          // Action: FlushTelemetry
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'ver', 'dev', 'nick', 'first', 'last', 'day', 'branch', 'lvl',
+            'cash', 'giftCash', 'sessions', 'secs', 'levels', 'tabs', 'acts',
+            'ret', 'categories', 'eventCounts', 'daily', 'deviceInfo', 'errs', 'acct', 'ts',
+            'lastErr', 'lastErrAt', 'lastErrVer'
+          ])
+        )
+      );
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /events/{eventId} {
+        allow get, list: if false;
+        allow create: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(eventId) &&
+          isValidTelemetryEvent(incoming()) &&
+          existsAfter(/databases/$(database)/documents/telemetry/$(userId)) &&
+          getAfter(/databases/$(database)/documents/telemetry/$(userId)).data.ts == request.time;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Net Cỏ Đầu Hẻm",
+  "description": "Game mô phỏng tiệm net Sài Gòn chơi miễn phí trên trình duyệt: quản lý quán, nâng cấp máy, đọc sổ kế toán, tính lãi lỗ.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

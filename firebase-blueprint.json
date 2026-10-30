@@ -1,0 +1,324 @@
+{
+  "entities": {
+    "SaveRecord": {
+      "title": "SaveRecord",
+      "description": "Cloud save state for an authenticated player in Net Co Dau Hem.",
+      "type": "object",
+      "properties": {
+        "blob": {
+          "type": "string",
+          "description": "Encrypted or serialized JSON save state.",
+          "minLength": 1,
+          "maxLength": 900000
+        },
+        "day": {
+          "type": "number",
+          "description": "Current in-game day."
+        },
+        "cash": {
+          "type": "number",
+          "description": "Current in-game cash balance."
+        },
+        "device": {
+          "type": "string",
+          "description": "User agent string of the saving device.",
+          "maxLength": 120
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp string of the save.",
+          "maxLength": 64
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the save."
+        }
+      },
+      "required": ["blob", "day", "cash", "device", "updated_at", "ts"]
+    },
+    "PlayerProfile": {
+      "title": "PlayerProfile",
+      "description": "Public leaderboard profile for a player.",
+      "type": "object",
+      "properties": {
+        "nick": {
+          "type": "string",
+          "description": "Player display nickname.",
+          "maxLength": 24
+        },
+        "shop": {
+          "type": "string",
+          "description": "Internet cafe shop name.",
+          "maxLength": 30
+        },
+        "day": {
+          "type": "number",
+          "description": "Current day reached."
+        },
+        "lvl": {
+          "type": "number",
+          "description": "Player level."
+        },
+        "branch": {
+          "type": "number",
+          "description": "Current branch count or index."
+        },
+        "cash": {
+          "type": "number",
+          "description": "Net cash for leaderboard ranking."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Shop star rating."
+        },
+        "hot": {
+          "type": "number",
+          "description": "Shop popularity score."
+        },
+        "served": {
+          "type": "number",
+          "description": "Total customers served."
+        },
+        "pcs": {
+          "type": "number",
+          "description": "Number of PCs owned."
+        },
+        "staff": {
+          "type": "number",
+          "description": "Number of staff hired."
+        },
+        "slogan": {
+          "type": "string",
+          "description": "Shop slogan.",
+          "maxLength": 48
+        },
+        "fish": {
+          "type": "number",
+          "description": "Fishing mini-game score."
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile update."
+        },
+        "expireAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expiration timestamp for TTL."
+        }
+      },
+      "required": [
+        "nick",
+        "shop",
+        "day",
+        "lvl",
+        "branch",
+        "cash",
+        "rating",
+        "hot",
+        "served",
+        "pcs",
+        "staff",
+        "slogan",
+        "fish",
+        "ts",
+        "expireAt"
+      ]
+    },
+    "NickClaim": {
+      "title": "NickClaim",
+      "description": "Unique nickname reservation mapping normalized nickId to owner uid.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "nick": {
+          "type": "string",
+          "description": "Display nickname.",
+          "minLength": 1,
+          "maxLength": 24
+        }
+      },
+      "required": ["uid", "nick"]
+    },
+    "TelemetryDoc": {
+      "title": "TelemetryDoc",
+      "description": "Aggregated telemetry metrics for a user or anonymous session.",
+      "type": "object",
+      "properties": {
+        "ver": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "dev": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "nick": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "first": {
+          "type": "number"
+        },
+        "last": {
+          "type": "number"
+        },
+        "day": {
+          "type": "number"
+        },
+        "branch": {
+          "type": "number"
+        },
+        "lvl": {
+          "type": "number"
+        },
+        "cash": {
+          "type": "number"
+        },
+        "giftCash": {
+          "type": "number"
+        },
+        "sessions": {
+          "type": "number"
+        },
+        "secs": {
+          "type": "number"
+        },
+        "levels": {
+          "type": "object"
+        },
+        "tabs": {
+          "type": "object"
+        },
+        "acts": {
+          "type": "object"
+        },
+        "ret": {
+          "type": "object"
+        },
+        "categories": {
+          "type": "object"
+        },
+        "eventCounts": {
+          "type": "object"
+        },
+        "daily": {
+          "type": "object"
+        },
+        "deviceInfo": {
+          "type": "object"
+        },
+        "errs": {
+          "type": "number"
+        },
+        "acct": {
+          "type": "number"
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastErr": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "lastErrAt": {
+          "type": "number"
+        },
+        "lastErrVer": {
+          "type": "string",
+          "maxLength": 32
+        }
+      },
+      "required": [
+        "ver",
+        "dev",
+        "nick",
+        "first",
+        "last",
+        "day",
+        "branch",
+        "lvl",
+        "cash",
+        "giftCash",
+        "sessions",
+        "secs",
+        "levels",
+        "tabs",
+        "acts",
+        "ret",
+        "categories",
+        "eventCounts",
+        "daily",
+        "deviceInfo",
+        "errs",
+        "acct",
+        "ts"
+      ]
+    },
+    "TelemetryEvent": {
+      "title": "TelemetryEvent",
+      "description": "Individual telemetry event in a user's telemetry subcollection.",
+      "type": "object",
+      "properties": {
+        "ev": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "p": {
+          "type": "object"
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expireAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["ev", "p", "ts", "expireAt"]
+    }
+  },
+  "firestore": {
+    "/saves/{userId}": {
+      "schema": {
+        "$ref": "#/entities/SaveRecord"
+      },
+      "description": "Private cloud save document per authenticated user."
+    },
+    "/players/{userId}": {
+      "schema": {
+        "$ref": "#/entities/PlayerProfile"
+      },
+      "description": "Public leaderboard stats document per authenticated player."
+    },
+    "/nicks/{nickId}": {
+      "schema": {
+        "$ref": "#/entities/NickClaim"
+      },
+      "description": "Nickname ownership registry."
+    },
+    "/telemetry/{userId}": {
+      "schema": {
+        "$ref": "#/entities/TelemetryDoc"
+      },
+      "description": "Per-user telemetry summary document."
+    },
+    "/telemetry/{userId}/events/{eventId}": {
+      "schema": {
+        "$ref": "#/entities/TelemetryEvent"
+      },
+      "description": "Subcollection of telemetry events belonging to a user."
+    }
+  }
+}
